@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>Lifeline | Health Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 16px;
+            border: 1px solid #334155;
+        }
+        
+        .score-big {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 16px;
+        }
+        
+        .action-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.95);
+            background: #334155;
+        }
+        
+        .action-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .action-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+        }
+        
+        .btn:active {
+            opacity: 0.8;
+        }
+        
+        .pro-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 20px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: #1e293b;
+            border-radius: 12px;
+            margin: 8px 16px;
+            border: 1px solid #334155;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 24px;
+        }
+        
+        .nav-item {
+            text-align: center;
+            padding: 8px 16px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: #3b82f6;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            width: 100%;
+            max-width: 430px;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 16px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        h3 { margin-bottom: 16px; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">💓 Lifeline</div>
+            <div>
+                <button onclick="showPro()" style="background:none;border:none;font-size:24px;cursor:pointer;">👑</button>
+            </div>
+        </div>
+        
+        <!-- Health Score -->
+        <div class="card">
+            <div style="color:#94a3b8;font-size:14px;margin-bottom:8px;">Health Score</div>
+            <div class="score-big" id="score">84</div>
+            <div style="color:#10b981;font-size:14px;">↗ +12% vs last week</div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="actions">
+            <div class="action-btn" onclick="openLog()">
+                <div class="action-icon">📝</div>
+                <div class="action-label">Log</div>
+            </div>
+            <div class="action-btn" onclick="openMeds()">
+                <div class="action-icon">💊</div>
+                <div class="action-label">Meds</div>
+            </div>
+            <div class="action-btn" onclick="openMood()">
+                <div class="action-icon">😊</div>
+                <div class="action-label">Mood</div>
+            </div>
+            <div class="action-btn" onclick="openVitals()">
+                <div class="action-icon">🩺</div>
+                <div class="action-label">Vitals</div>
+            </div>
+        </div>
+        
+        <!-- Pro Card -->
+        <div class="pro-card" onclick="showPro()">
+            <div style="font-weight:bold;margin-bottom:8px;">✨ AI Insights</div>
+            <div style="font-size:14px;opacity:0.9;">Upgrade to see personalized health recommendations</div>
+            <div style="background:white;color:#667eea;display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;margin-top:12px;">PRO</div>
+        </div>
+        
+        <!-- Timeline -->
+        <div style="padding:0 16px;margin-top:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>Today's Timeline</h3>
+                <a href="#" style="color:#3b82f6;text-decoration:none;font-size:14px;">View All</a>
+            </div>
+            <div id="timeline">
+                <div class="timeline-item">
+                    <div style="font-size:24px;">😴</div>
+                    <div>
+                        <div style="font-weight:600;">Sleep</div>
+                        <div style="color:#94a3b8;font-size:14px;">7.5 hours • 10:30 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="goHome()">
+            <div style="font-size:20px;">🏠</div>
+            <div style="font-size:11px;">Home</div>
+        </div>
+        <div class="nav-item" onclick="showData()">
+            <div style="font-size:20px;">📊</div>
+            <div style="font-size:11px;">Data</div>
+        </div>
+        <div class="nav-item" onclick="openLog()" style="background:linear-gradient(135deg,#667eea,#764ba2);width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-20px;">
+            <div style="font-size:24px;color:white;">+</div>
+        </div>
+        <div class="nav-item" onclick="showInsights()">
+            <div style="font-size:20px;">💡</div>
+            <div style="font-size:11px;">Insights</div>
+        </div>
+        <div class="nav-item" onclick="showSettings()">
+            <div style="font-size:20px;">⚙️</div>
+            <div style="font-size:11px;">Settings</div>
+        </div>
+    </div>
+    
+    <!-- Log Modal -->
+    <div class="modal" id="logModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <h3>Add Entry</h3>
+            <select class="input" id="logType">
+                <option value="sleep">Sleep</option>
+                <option value="activity">Activity</option>
+                <option value="water">Water</option>
+                <option value="symptom">Symptom</option>
+            </select>
+            <input type="text" class="input" id="logValue" placeholder="Value (e.g., 8 hours)">
+            <button class="btn" onclick="saveLog()">Save Entry</button>
+        </div>
+    </div>
+    
+    <!-- Meds Modal -->
+    <div class="modal" id="medsModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <h3>Add Medication</h3>
+            <input type="text" class="input" id="medName" placeholder="Medication name">
+            <input type="text" class="input" id="medDose" placeholder="Dosage (e.g., 500mg)">
+            <button class="btn" onclick="saveMeds()">Log Medication</button>
+        </div>
+    </div>
+    
+    <!-- Mood Modal -->
+    <div class="modal" id="moodModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <h3>How are you feeling?</h3>
+            <div style="display:flex;justify-content:space-around;margin:24px 0;">
+                <button onclick="saveMood(1)" style="background:none;border:none;font-size:40px;cursor:pointer;">😢</button>
+                <button onclick="saveMood(2)" style="background:none;border:none;font-size:40px;cursor:pointer;">😕</button>
+                <button onclick="saveMood(3)" style="background:none;border:none;font-size:40px;cursor:pointer;">😐</button>
+                <button onclick="saveMood(4)" style="background:none;border:none;font-size:40px;cursor:pointer;">🙂</button>
+                <button onclick="saveMood(5)" style="background:none;border:none;font-size:40px;cursor:pointer;">😄</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vitals Modal -->
+    <div class="modal" id="vitalsModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeAll()">×</button>
+            <h3>Record Vitals</h3>
+            <input type="number" class="input" id="heartRate" placeholder="Heart rate (BPM)">
+            <input type="text" class="input" id="bloodPressure" placeholder="Blood pressure (120/80)">
+            <button class="btn" onclick="saveVitals()">Save Vitals</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple data storage
+        let entries = JSON.parse(localStorage.getItem('entries') || '[]');
+        let score = parseInt(localStorage.getItem('score') || '84');
+        
+        // Update display
+        document.getElementById('score').textContent = score;
+        
+        // Modal functions
+        function openLog() { 
+            document.getElementById('logModal').classList.add('show'); 
+        }
+        function openMeds() { 
+            document.getElementById('medsModal').classList.add('show'); 
+        }
+        function openMood() { 
+            document.getElementById('moodModal').classList.add('show'); 
+        }
+        function openVitals() { 
+            document.getElementById('vitalsModal').classList.add('show'); 
+        }
+        function closeAll() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        }
+        
+        // Save functions
+        function saveLog() {
+            const type = document.getElementById('logType').value;
+            const value = document.getElementById('logValue').value;
+            if(!value) return alert('Enter a value');
+            
+            addEntry(type, value);
+            closeAll();
+            updateScore(2);
+        }
+        
+        function saveMeds() {
+            const name = document.getElementById('medName').value;
+            if(!name) return alert('Enter medication name');
+            
+            addEntry('meds', name);
+            closeAll();
+            updateScore(3);
+        }
+        
+        function saveMood(level) {
+            const moods = ['Terrible', 'Bad', 'Okay', 'Good', 'Excellent'];
+            addEntry('mood', moods[level-1]);
+            closeAll();
+            updateScore(level > 3 ? 5 : 2);
+        }
+        
+        function saveVitals() {
+            const hr = document.getElementById('heartRate').value;
+            if(hr) addEntry('heart rate', hr + ' bpm');
+            closeAll();
+            updateScore(4);
+        }
+        
+        function addEntry(type, value) {
+            entries.unshift({
+                type: type,
+                value: value,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            localStorage.setItem('entries', JSON.stringify(entries));
+            renderTimeline();
+        }
+        
+        function updateScore(points) {
+            score = Math.min(100, score + points);
+            document.getElementById('score').textContent = score;
+            localStorage.setItem('score', score);
+        }
+        
+        function renderTimeline() {
+            const html = entries.slice(0, 5).map(e => `
+                <div class="timeline-item">
+                    <div style="font-size:24px;">${getIcon(e.type)}</div>
+                    <div>
+                        <div style="font-weight:600;text-transform:capitalize;">${e.type}</div>
+                        <div style="color:#94a3b8;font-size:14px;">${e.value} • ${e.time}</div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('timeline').innerHTML = html || '<div style="text-align:center;padding:40px;color:#64748b;">No entries yet today</div>';
+        }
+        
+        function getIcon(type) {
+            const icons = {
+                sleep: '😴', activity: '🏃', water: '💧', symptom: '🔥',
+                meds: '💊', mood: '😊', 'heart rate': '❤️'
+            };
+            return icons[type] || '📝';
+        }
+        
+        // Navigation
+        function goHome() { window.scrollTo(0,0); }
+        function showData() { alert('Data view coming in Pro!'); }
+        function showInsights() { showPro();
+
+        function showSettings() { alert('Settings:\n\nHealth Score: ' + score + '\nEntries: ' + entries.length); }
+        function showPro() { 
+window.location.href = 'https://buy.stripe.com/test_eVq4gA18L7gUgGf1eN6g800 }
+            if(confirm('Lifeline Pro Features:\n\n✓ AI Insights\n✓ Unlimited History\n✓ Family Sharing\n✓ Export PDF\n\n$9.99/month\n\nOpen payment page?')) 
+}
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal').forEach(m => {
+            m.addEventListener('click', (e) => {
+                if(e.target === m) closeAll();
+            });
+        });
+        
+        // Initial render
+        renderTimeline();
+    </script>
+</body>
+</html>
